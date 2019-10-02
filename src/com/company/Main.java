@@ -15,24 +15,43 @@ public class Main {
 
     public static void main(String[] args) {
         ArrayList<Flight> test = new ArrayList<>();
-        Airport a = new Airport("a");
-        Airport b = new Airport("b");
-        Airport c = new Airport("c");
-        Airport d = new Airport("d");
-        Airport e = new Airport("e");
-        Airport f = new Airport("f");
-        Airport g = new Airport("g");
-        test.add(new Flight(a,b,Duration.ofHours(5),2));
-        test.add(new Flight(c,b,Duration.ofHours(7),2));
-        test.add(new Flight(b,c,Duration.ofHours(4),2));
-        test.add(new Flight(b,e,Duration.ofHours(2),2));
-        test.add(new Flight(e,f,Duration.ofHours(1),2));
-        test.add(new Flight(f,g,Duration.ofHours(10),2));
-        test.add(new Flight(g,d,Duration.ofHours(12),2));
-        test.add(new Flight(a,d,Duration.ofHours(2),2));
+        Airport a0 = new Airport("a0");
+        Airport a1 = new Airport("a1");
+        Airport a2 = new Airport("a2");
+        Airport a3 = new Airport("a3");
+        Airport a4 = new Airport("a4");
+        Airport a5 = new Airport("a5");
+        Airport a6 = new Airport("a6");
+        Airport a7 = new Airport("a7");
+        Airport a8 = new Airport("a8");
+        Airport a9 = new Airport("a9");
+        Airport a10 = new Airport("a10");
+        Airport a11 = new Airport("a11");
+        Airport a12 = new Airport("a12");
+        test.add(new Flight(a1,a2,Duration.ofHours(1),2));
+        test.add(new Flight(a1,a6,Duration.ofHours(5),2));
+        test.add(new Flight(a6,a4,Duration.ofHours(5),2));
+        test.add(new Flight(a3,a4,Duration.ofHours(5),2));
+        test.add(new Flight(a5,a6,Duration.ofHours(5),2));
+        test.add(new Flight(a4,a5,Duration.ofHours(5),2));
+        test.add(new Flight(a4,a0,Duration.ofHours(5),2));
+        test.add(new Flight(a0,a2,Duration.ofHours(5),2));
+        test.add(new Flight(a7,a2,Duration.ofHours(5),2));
+        test.add(new Flight(a11,a7,Duration.ofHours(5),2));
+        test.add(new Flight(a12,a9,Duration.ofHours(5),2));
+        test.add(new Flight(a9,a10,Duration.ofHours(5),2));
+        test.add(new Flight(a10,a11,Duration.ofHours(5),2));
+        test.add(new Flight(a11,a9,Duration.ofHours(5),2));
+        test.add(new Flight(a2,a1,Duration.ofHours(5),2));
+        test.add(new Flight(a2,a0,Duration.ofHours(5),2));
+        test.add(new Flight(a0,a4,Duration.ofHours(5),2));
+        test.add(new Flight(a12,a5,Duration.ofHours(250),2));
+        test.add(new Flight(a7,a0,Duration.ofHours(1),2));
+
+        //test.add(new Flight(a,d,Duration.ofHours(2),2));
         Main main = new Main(test);
 
-        main.getShortestFlightByRoute(a,d);
+        main.getShortestFlightByRoute(a12,a5);
     }
 
     private Collection<Flight> availableFlights;
@@ -88,21 +107,26 @@ public class Main {
 
 
         Object[] way = findWay(arr,temp.get(origin.getName()),temp.get(destination.getName()));
+        System.out.println(way[0]);
+        if(way[1] == null){
+            return new ArrayList<Flight>();
+        }
         ArrayList<Integer> flightListString = (ArrayList<Integer>) way[1];
         Collections.reverse(flightListString);
 
-        System.out.println(flightListString);
-        System.out.println(way[0]);
+        //System.out.println(flightListString);
+        System.out.println(way[1]+"RAW");
 
         ArrayList<Integer> newList = new ArrayList<>();
 
-        newList.add(temp.get(origin.getName()));
+        //newList.add(temp.get(origin.getName()));
         for (int x = 0; x < flightListString.size();x++){
             newList.add(flightListString.get(x));
             newList.add(flightListString.get(x));
         }
         newList.remove(newList.size()-1);
-        System.out.println(newList);
+        newList.remove(0);
+        System.out.println(newList + "!");
 
         ArrayList<Flight> answer = new ArrayList<>();
         for(int y = 0; y < newList.size()/2;y++){
@@ -114,37 +138,32 @@ public class Main {
     }
 
     private Object[] findWay(int[][] arr, int origin, int dest){
-        return findWay(origin,dest,0,arr,new HashSet<>(), new ArrayList<Integer>(), new HashMap<>());
+        return findWay(origin,dest,0,arr,new HashSet<>(), new ArrayList<Integer>());
     }
 
-    private Object[] findWay(int self, int dest, int way, int[][] arr, HashSet<Integer> soFar, ArrayList<Integer> path, HashMap<Integer,Object[]> known){
-        ArrayList<Integer> tempPath = new ArrayList<>();
+    private Object[] findWay(int self, int dest, int way, int[][] arr, HashSet<Integer> soFar, ArrayList<Integer> path){
         int thisWay = Integer.MAX_VALUE;
         if(self == dest){
-            tempPath.add(self);
-            return new Object[]{way,path,tempPath};
-        }else if(known.containsKey(self)){
-            return new Object[]{way + (int)known.get(self)[0],path,tempPath};
+            path = new ArrayList<>();
+            path.add(self);
+            return new Object[]{way,path};
         }else{
             for(int col = 0; col < arr[self].length; col++){
                 if(arr[self][col] > 0){
                     if(!soFar.contains(col)){
                         soFar.add(self);
-                        Object[] ret = findWay(col,dest,way + arr[self][col],arr, soFar, path, known);
+                        Object[] ret = findWay(col,dest,way + arr[self][col],arr, soFar, path);
                         soFar.remove(self);
                         if(thisWay > (int)ret[0] && (int)ret[0] > 0){
-                            path.addAll((ArrayList)ret[2]);
                             thisWay = (int)ret[0];
+                            path = (ArrayList<Integer>) ret[1];
+                            path.add(self);
                         }
                     }
                 }
             }
-            tempPath.add(self);
-            known.put(self,new Object[]{thisWay,tempPath});
-            return new Object[]{thisWay,path,tempPath};
+            return new Object[]{thisWay,path};
         }
     }
-
-
 }
 
