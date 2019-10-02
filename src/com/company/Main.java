@@ -29,7 +29,7 @@ public class Main {
         test.add(new Flight(e,f,Duration.ofHours(1),2));
         test.add(new Flight(f,g,Duration.ofHours(10),2));
         test.add(new Flight(g,d,Duration.ofHours(12),2));
-        //test.add(new Flight(a,d,Duration.ofHours(2),2));
+        test.add(new Flight(a,d,Duration.ofHours(2),2));
         Main main = new Main(test);
 
         main.getShortestFlightByRoute(a,d);
@@ -92,6 +92,7 @@ public class Main {
         Collections.reverse(flightListString);
 
         System.out.println(flightListString);
+        System.out.println(way[0]);
 
         ArrayList<Integer> newList = new ArrayList<>();
 
