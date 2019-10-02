@@ -100,22 +100,19 @@ public class Main {
     }
 
     private int findWay(int[][] arr, int origin, int dest){
-        return findWay(origin,dest,new HashMap<>(),0,arr,new HashSet<>());
+        return findWay(origin,dest,0,arr,new HashSet<>());
     }
 
-    private int findWay(int self, int dest, HashMap<Integer,Integer> finished, int way, int[][] arr, HashSet<Integer> soFar){
+    private int findWay(int self, int dest, int way, int[][] arr, HashSet<Integer> soFar){
         int thisWay = Integer.MAX_VALUE;
         soFar.add(self);
         if(self == dest){
             return way;
-        }else if(finished.containsKey(self)){
-            return way + finished.get(self);
         }else{
             for(int col = 0; col < arr[self].length; col++){
                 if(arr[self][col] > 0){
                     if(!soFar.contains(col)){
-                        int ret = findWay(col,dest,finished,way + arr[self][col],arr, soFar);
-                        finished.put(self,ret);
+                        int ret = findWay(col,dest,way + arr[self][col],arr, soFar);
                         if(thisWay > ret){
                             thisWay = ret;
                         }
