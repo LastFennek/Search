@@ -1,9 +1,12 @@
 package com.company;
 
+import org.w3c.dom.ls.LSOutput;
+
 import java.lang.reflect.Array;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.time.Duration;
 
@@ -56,25 +59,25 @@ public class Main {
 
     public List<Flight> getShortestFlightByRoute(Airport origin, Airport destination) {
 
-        List list = new ArrayList<>();
-
         //worst path finding ever
 
         HashMap<String,Integer> temp = new HashMap<>();
-        HashMap<Integer,Flight> reverseTemp = new HashMap<>();
+        HashMap<String, Flight> reversTempFlight = new HashMap<>();
+        HashMap<Integer, String> reversTemp = new HashMap<>();
 
         int counter = 0;
         for(Flight x : availableFlights){
             if(!temp.containsKey(x.getDestination().getName())){
                 temp.put(x.getDestination().getName(),counter);
-                reverseTemp.put(counter,x);
+                reversTemp.put(counter,x.getDestination().getName());
                 counter++;
             }
             if(!temp.containsKey(x.getOrigin().getName())){
                 temp.put(x.getOrigin().getName(),counter);
-                reverseTemp.put(counter,x);
+                reversTemp.put(counter,x.getOrigin().getName());
                 counter++;
             }
+            reversTempFlight.put(x.getOrigin().getName()+x.getDestination().getName(),x);
         }
 
         int[][] arr = new int[temp.size()][temp.size()];
@@ -84,25 +87,27 @@ public class Main {
         }
 
 
-        for(int[] x : arr){
-            for(int y : x){
-                System.out.print(y+"\t");
-            }
-            System.out.println("\n");
-        }
-
-
         Object[] way = findWay(arr,temp.get(origin.getName()),temp.get(destination.getName()));
         ArrayList<Integer> flightListString = (ArrayList<Integer>) way[1];
         Collections.reverse(flightListString);
-        List<Flight> answer = new ArrayList<>();
 
-        System.out.println(way[1]);
-        for(int x : flightListString){
-            System.out.println(reverseTemp.get(x));
-            answer.add(reverseTemp.get(x));
+        System.out.println(flightListString);
+
+        ArrayList<Integer> newList = new ArrayList<>();
+
+        newList.add(temp.get(origin.getName()));
+        for (int x = 0; x < flightListString.size();x++){
+            newList.add(flightListString.get(x));
+            newList.add(flightListString.get(x));
         }
-        System.out.println(way[0]);
+        newList.remove(newList.size()-1);
+        System.out.println(newList);
+
+        ArrayList<Flight> answer = new ArrayList<>();
+        for(int y = 0; y < newList.size()/2;y++){
+            answer.add(reversTempFlight.get(reversTemp.get(newList.get(y*2))+reversTemp.get(newList.get(y*2+1))));
+        }
+        System.out.println(answer);
 
         return answer;
     }
