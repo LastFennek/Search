@@ -33,20 +33,20 @@ public class Main {
         test.add(new Flight(a6,a4,Duration.ofHours(5),2));
         test.add(new Flight(a3,a4,Duration.ofHours(5),2));
         test.add(new Flight(a5,a6,Duration.ofHours(5),2));
-        test.add(new Flight(a4,a5,Duration.ofHours(5),2));
+        test.add(new Flight(a4,a5,Duration.ofHours(5),0));
         test.add(new Flight(a4,a0,Duration.ofHours(5),2));
         test.add(new Flight(a0,a2,Duration.ofHours(5),2));
-        test.add(new Flight(a7,a2,Duration.ofHours(5),2));
+        test.add(new Flight(a7,a2,Duration.ofHours(5),0));
         test.add(new Flight(a11,a7,Duration.ofHours(5),2));
         test.add(new Flight(a12,a9,Duration.ofHours(5),2));
         test.add(new Flight(a9,a10,Duration.ofHours(5),2));
         test.add(new Flight(a10,a11,Duration.ofHours(5),2));
         test.add(new Flight(a11,a9,Duration.ofHours(5),2));
         test.add(new Flight(a2,a1,Duration.ofHours(5),2));
-        test.add(new Flight(a2,a0,Duration.ofHours(5),2));
-        test.add(new Flight(a0,a4,Duration.ofHours(5),2));
-        test.add(new Flight(a12,a5,Duration.ofHours(250),2));
-        test.add(new Flight(a7,a0,Duration.ofHours(1),2));
+        test.add(new Flight(a2,a0,Duration.ofHours(50),2));
+        test.add(new Flight(a0,a4,Duration.ofHours(5),0));
+        test.add(new Flight(a12,a5,Duration.ofHours(250),0));
+        test.add(new Flight(a7,a0,Duration.ofHours(105),2));
 
         //test.add(new Flight(a,d,Duration.ofHours(2),2));
         Main main = new Main(test);
@@ -86,23 +86,27 @@ public class Main {
 
         int counter = 0;
         for(Flight x : availableFlights){
-            if(!temp.containsKey(x.getDestination().getName())){
-                temp.put(x.getDestination().getName(),counter);
-                reversTemp.put(counter,x.getDestination().getName());
-                counter++;
+            if(x.getAvailableSeats() > 0){
+                if(!temp.containsKey(x.getDestination().getName())){
+                    temp.put(x.getDestination().getName(),counter);
+                    reversTemp.put(counter,x.getDestination().getName());
+                    counter++;
+                }
+                if(!temp.containsKey(x.getOrigin().getName())){
+                    temp.put(x.getOrigin().getName(),counter);
+                    reversTemp.put(counter,x.getOrigin().getName());
+                    counter++;
+                }
+                reversTempFlight.put(x.getOrigin().getName()+x.getDestination().getName(),x);
             }
-            if(!temp.containsKey(x.getOrigin().getName())){
-                temp.put(x.getOrigin().getName(),counter);
-                reversTemp.put(counter,x.getOrigin().getName());
-                counter++;
-            }
-            reversTempFlight.put(x.getOrigin().getName()+x.getDestination().getName(),x);
         }
 
         int[][] arr = new int[temp.size()][temp.size()];
 
         for(Flight x : availableFlights){
-            arr[temp.get(x.getOrigin().getName())][temp.get(x.getDestination().getName())] = (int)x.getDuration().toMinutes();
+            if(x.getAvailableSeats() > 0){
+                arr[temp.get(x.getOrigin().getName())][temp.get(x.getDestination().getName())] = (int)x.getDuration().toMinutes();
+            }
         }
 
 
@@ -123,6 +127,10 @@ public class Main {
         for (int x = 0; x < flightListString.size();x++){
             newList.add(flightListString.get(x));
             newList.add(flightListString.get(x));
+        }
+
+        if(newList == null || newList.size() == 0){
+            return new ArrayList<>();
         }
         newList.remove(newList.size()-1);
         newList.remove(0);
