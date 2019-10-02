@@ -1,12 +1,9 @@
 package com.company;
 
+import java.lang.reflect.Array;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 import java.time.Duration;
 
@@ -23,15 +20,16 @@ public class Main {
         Airport f = new Airport("f");
         Airport g = new Airport("g");
         test.add(new Flight(a,b,Duration.ofHours(5),2));
-        test.add(new Flight(c,b,Duration.ofHours(4),2));
+        test.add(new Flight(c,b,Duration.ofHours(7),2));
         test.add(new Flight(b,c,Duration.ofHours(4),2));
         test.add(new Flight(b,e,Duration.ofHours(2),2));
         test.add(new Flight(e,f,Duration.ofHours(1),2));
         test.add(new Flight(f,g,Duration.ofHours(10),2));
         test.add(new Flight(g,d,Duration.ofHours(12),2));
+        //test.add(new Flight(a,d,Duration.ofHours(2),2));
         Main main = new Main(test);
 
-        main.getShortestFlightByRoute(a,c);
+        main.getShortestFlightByRoute(a,d);
     }
 
     private Collection<Flight> availableFlights;
@@ -63,15 +61,18 @@ public class Main {
         //worst path finding ever
 
         HashMap<String,Integer> temp = new HashMap<>();
+        HashMap<Integer,Flight> reverseTemp = new HashMap<>();
 
         int counter = 0;
         for(Flight x : availableFlights){
             if(!temp.containsKey(x.getDestination().getName())){
                 temp.put(x.getDestination().getName(),counter);
+                reverseTemp.put(counter,x);
                 counter++;
             }
             if(!temp.containsKey(x.getOrigin().getName())){
                 temp.put(x.getOrigin().getName(),counter);
+                reverseTemp.put(counter,x);
                 counter++;
             }
         }
@@ -90,36 +91,51 @@ public class Main {
             System.out.println("\n");
         }
 
-        System.out.println(findWay(arr,1,6));
 
+        Object[] way = findWay(arr,temp.get(origin.getName()),temp.get(destination.getName()));
+        ArrayList<Integer> flightListString = (ArrayList<Integer>) way[1];
+        Collections.reverse(flightListString);
+        List<Flight> answer = new ArrayList<>();
 
+        System.out.println(way[1]);
+        for(int x : flightListString){
+            System.out.println(reverseTemp.get(x));
+            answer.add(reverseTemp.get(x));
+        }
+        System.out.println(way[0]);
 
-        //-------------------------------------------
-
-        return list;
+        return answer;
     }
 
-    private int findWay(int[][] arr, int origin, int dest){
-        return findWay(origin,dest,0,arr,new HashSet<>());
+    private Object[] findWay(int[][] arr, int origin, int dest){
+        return findWay(origin,dest,0,arr,new HashSet<>(), new ArrayList<Integer>(), new HashMap<>());
     }
 
-    private int findWay(int self, int dest, int way, int[][] arr, HashSet<Integer> soFar){
+    private Object[] findWay(int self, int dest, int way, int[][] arr, HashSet<Integer> soFar, ArrayList<Integer> path, HashMap<Integer,Object[]> known){
+        ArrayList<Integer> tempPath = new ArrayList<>();
         int thisWay = Integer.MAX_VALUE;
-        soFar.add(self);
         if(self == dest){
-            return way;
+            tempPath.add(self);
+            return new Object[]{way,path,tempPath};
+        }else if(known.containsKey(self)){
+            return new Object[]{way + (int)known.get(self)[0],path,tempPath};
         }else{
             for(int col = 0; col < arr[self].length; col++){
                 if(arr[self][col] > 0){
                     if(!soFar.contains(col)){
-                        int ret = findWay(col,dest,way + arr[self][col],arr, soFar);
-                        if(thisWay > ret){
-                            thisWay = ret;
+                        soFar.add(self);
+                        Object[] ret = findWay(col,dest,way + arr[self][col],arr, soFar, path, known);
+                        soFar.remove(self);
+                        if(thisWay > (int)ret[0] && (int)ret[0] > 0){
+                            path.addAll((ArrayList)ret[2]);
+                            thisWay = (int)ret[0];
                         }
                     }
                 }
             }
-            return thisWay;
+            tempPath.add(self);
+            known.put(self,new Object[]{thisWay,tempPath});
+            return new Object[]{thisWay,path,tempPath};
         }
     }
 
